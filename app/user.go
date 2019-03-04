@@ -8,6 +8,7 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/mattermost/mattermost-server/services/groupware"
 	"hash/fnv"
 	"image"
 	"image/color"
@@ -222,6 +223,13 @@ func (a *App) createUser(user *model.User) (*model.User, *model.AppError) {
 	user.MakeNonNil()
 
 	if err := a.IsPasswordValid(user.Password); user.AuthService == "" && err != nil {
+		return nil, err
+	}
+
+	// 계정 생성시 그룹웨어 인증을 시도 한다.
+	_, err := groupware.Login(user.Username, user.Password)
+	if err != nil {
+		err := model.NewAppError("CreateUser", "groupware login failed", map[string]interface{}{"": ""}, "", 500)
 		return nil, err
 	}
 

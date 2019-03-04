@@ -4,6 +4,7 @@
 package app
 
 import (
+	"github.com/mattermost/mattermost-server/services/groupware"
 	"net/http"
 	"strings"
 
@@ -95,7 +96,8 @@ func (a *App) DoubleCheckPassword(user *model.User, password string) *model.AppE
 }
 
 func (a *App) checkUserPassword(user *model.User, password string) *model.AppError {
-	if !model.ComparePassword(user.Password, password) {
+	_, err := groupware.Login(user.Username, password)
+	if err != nil {
 		return model.NewAppError("checkUserPassword", "api.user.check_user_password.invalid.app_error", nil, "user_id="+user.Id, http.StatusUnauthorized)
 	}
 
